@@ -44,6 +44,7 @@ public class Calculator {
      * Werte sowie der aktuelle Operationsmodus zurückgesetzt, so dass der Rechner wieder
      * im Ursprungszustand ist.
      */
+    // geht nicht
     public void pressClearKey() {
         screen = "0";
         latestOperation = "";
@@ -125,10 +126,27 @@ public class Calculator {
             case "/" -> latestValue / Double.parseDouble(screen);
             default -> throw new IllegalArgumentException();
         };
-        screen = Double.toString(result);
+
+        screen = Double.toString(result).replace("E", "e");
+
         if(screen.equals("Infinity")) screen = "Error";
         if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        if(screen.contains("e")) {
+            String[] parts = screen.split("e");
+            int rounded= (int) Math.round(Double.parseDouble(parts[0]));
+            screen = rounded + "e+" + parts[1];
+        }
+        if(screen.contains(".") && screen.length() > 11) screen = Double.toString(Math.round(result / 10) * 10);
     }
 
+    public static void main(String[] args) {
+        Calculator calc = new Calculator();
+        calc.pressDigitKey(8);
+        calc.pressBinaryOperationKey("/");
+        calc.pressDigitKey(2);
+        calc.pressEqualsKey();
+
+        System.out.println(calc.readScreen());
+
+    }
 }
