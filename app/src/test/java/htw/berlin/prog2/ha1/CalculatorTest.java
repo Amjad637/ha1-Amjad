@@ -111,6 +111,44 @@ class CalculatorTest {
          *
          */
     }
+    @Test
+    @DisplayName("if the nummber is too big should display ,E,")
+        // Roter Test
+    void testbignummbers() {
+        Calculator calc = new Calculator();
+        for (int i = 0; i < 9; i++) {
+            calc.pressDigitKey(9);
+        }
+        calc.pressBinaryOperationKey("x");
+
+        for (int i = 0; i < 4; i++) {
+            calc.pressEqualsKey();
+        }
+
+        String expected = "10e+44";
+        String actual = calc.readScreen();
+        assertEquals(expected, actual);
+    }
+    @Test
+    @DisplayName("press EqualsKey twice after binary operation to repeat the calculation")
+
+        // Roter Test
+    void testEqualsKey() {
+        Calculator calculator = new Calculator();
+        calculator.pressDigitKey(2);
+        calculator.pressBinaryOperationKey("+");
+        calculator.pressDigitKey(4);
+        calculator.pressEqualsKey();
+        calculator.pressDigitKey(5);
+        calculator.pressEqualsKey();
+
+        String expected = "9";
+        String actual = calculator.readScreen();
+
+        assertEquals(expected, actual);
+    }
+
+
 
 }
 
