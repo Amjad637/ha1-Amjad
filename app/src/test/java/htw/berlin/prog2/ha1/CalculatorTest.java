@@ -90,5 +90,27 @@ class CalculatorTest {
 
 
     //TODO hier weitere Tests erstellen
+
+    @Test
+    @DisplayName("muss erfolgreich teilen")
+        // Grüner Test
+    void testTeilen() {
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(8);
+        calc.pressBinaryOperationKey("/");
+        calc.pressDigitKey(2);
+        calc.pressEqualsKey();
+        String expected = "4";
+        String actual = calc.readScreen();
+        assertEquals(expected, actual);
+
+        /**
+         *
+         *
+         *
+         */
+    }
+
 }
 
