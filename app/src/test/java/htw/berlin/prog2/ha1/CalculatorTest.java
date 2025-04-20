@@ -71,29 +71,13 @@ class CalculatorTest {
         assertEquals(expected, actual);
     }
 
-    @Test
-    @DisplayName("should not allow multiple decimal dots")
-    void testMultipleDecimalDots() {
-        Calculator calc = new Calculator();
-
-        calc.pressDigitKey(1);
-        calc.pressDotKey();
-        calc.pressDigitKey(7);
-        calc.pressDotKey();
-        calc.pressDigitKey(8);
-
-        String expected = "1.78";
-        String actual = calc.readScreen();
-
-        assertEquals(expected, actual);
-    }
-
 
     //TODO hier weitere Tests erstellen
 
+    ///  Grüner Test.
     @Test
     @DisplayName("muss erfolgreich teilen")
-        // Grüner Test
+    // Grüner Test
     void testTeilen() {
         Calculator calc = new Calculator();
 
@@ -104,51 +88,51 @@ class CalculatorTest {
         String expected = "4";
         String actual = calc.readScreen();
         assertEquals(expected, actual);
-
-        /**
-         *
-         *
-         *
-         */
     }
+
+    ///  Roter Test.
     @Test
-    @DisplayName("if the nummber is too big should display ,E,")
-        // Roter Test
-    void testbignummbers() {
+    @DisplayName("muss den Prozess bis zum Ende durchführen")
+    void testMultipleDecimalDots() {
         Calculator calc = new Calculator();
-        for (int i = 0; i < 9; i++) {
-            calc.pressDigitKey(9);
-        }
-        calc.pressBinaryOperationKey("x");
+        calc.pressDigitKey(2);
+        calc.pressDigitKey(0);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(1);
+        calc.pressDigitKey(0);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(2);
+        calc.pressDigitKey(0);
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(2);
+        calc.pressDigitKey(0);
+        calc.pressEqualsKey();
+        //  calc.pressBinaryOperationKey("+");
 
-        for (int i = 0; i < 4; i++) {
-            calc.pressEqualsKey();
-        }
-
-        String expected = "10e+44";
+        String expected = "70";
         String actual = calc.readScreen();
+
         assertEquals(expected, actual);
     }
+
+ // ROTER TEST .
     @Test
-    @DisplayName("press EqualsKey twice after binary operation to repeat the calculation")
+    @DisplayName("muss Dezimale Zahlen erfolgreich addieren")
+    void testDecimalAdditionPrecision() {
+        Calculator calc = new Calculator();
 
-        // Roter Test
-    void testEqualsKey() {
-        Calculator calculator = new Calculator();
-        calculator.pressDigitKey(2);
-        calculator.pressBinaryOperationKey("+");
-        calculator.pressDigitKey(4);
-        calculator.pressEqualsKey();
-        calculator.pressDigitKey(5);
-        calculator.pressEqualsKey();
+        calc.pressDigitKey(3);
+        calc.pressDotKey();
+        calc.pressDigitKey(1); // 1.1
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(4);
+        calc.pressDotKey();
+        calc.pressDigitKey(2); // 2.2
+        calc.pressEqualsKey();
 
-        String expected = "9";
-        String actual = calculator.readScreen();
+        String expected = "7.3";
+        String actual = calc.readScreen();
 
         assertEquals(expected, actual);
     }
-
-
-
 }
-

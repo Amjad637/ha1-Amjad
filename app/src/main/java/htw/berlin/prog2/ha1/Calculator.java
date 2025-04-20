@@ -1,4 +1,6 @@
 package htw.berlin.prog2.ha1;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Eine Klasse, die das Verhalten des Online Taschenrechners imitiert, welcher auf
@@ -7,6 +9,10 @@ package htw.berlin.prog2.ha1;
  * Enthält mit Absicht noch diverse Bugs oder unvollständige Funktionen.
  */
 public class Calculator {
+    private double speicher;
+    private double lastOperand = 0;
+    private boolean repeatMode = false;
+
 
     private String screen = "0";
 
@@ -26,12 +32,13 @@ public class Calculator {
      * drücken kann muss der Wert positiv und einstellig sein und zwischen 0 und 9 liegen.
      * Führt in jedem Fall dazu, dass die gerade gedrückte Ziffer auf dem Bildschirm angezeigt
      * oder rechts an die zuvor gedrückte Ziffer angehängt angezeigt wird.
+     *
      * @param digit Die Ziffer, deren Taste gedrückt wurde
      */
     public void pressDigitKey(int digit) {
-        if(digit > 9 || digit < 0) throw new IllegalArgumentException();
+        if (digit > 9 || digit < 0) throw new IllegalArgumentException();
 
-        if(screen.equals("0") || latestValue == Double.parseDouble(screen)) screen = "";
+        if (screen.equals("0") || latestValue == Double.parseDouble(screen)) screen = "";
 
         screen = screen + digit;
     }
@@ -44,7 +51,6 @@ public class Calculator {
      * Werte sowie der aktuelle Operationsmodus zurückgesetzt, so dass der Rechner wieder
      * im Ursprungszustand ist.
      */
-    // geht nicht
     public void pressClearKey() {
         screen = "0";
         latestOperation = "";
@@ -58,32 +64,64 @@ public class Calculator {
      * Rechner in den passenden Operationsmodus versetzt.
      * Beim zweiten Drücken nach Eingabe einer weiteren Zahl wird direkt des aktuelle Zwischenergebnis
      * auf dem Bildschirm angezeigt. Falls hierbei eine Division durch Null auftritt, wird "Error" angezeigt.
+     *
      * @param operation "+" für Addition, "-" für Substraktion, "x" für Multiplikation, "/" für Division
      */
-    public void pressBinaryOperationKey(String operation)  {
-        latestValue = Double.parseDouble(screen);
+    public void pressBinaryOperationKey(String operation) {
+        // Wenn schon eine Operation existiert → führe Berechnung durch
+        double currentValue = Double.parseDouble(screen);
+
+        if (!latestOperation.isEmpty()) {
+            double result = switch (latestOperation) {
+                case "+" -> latestValue + currentValue;
+                case "-" -> latestValue - currentValue;
+                case "x" -> latestValue * currentValue;
+                case "/" -> currentValue == 0 ? Double.NaN : latestValue / currentValue;
+                default -> throw new IllegalArgumentException();
+            };
+
+            if (Double.isNaN(result) || Double.isInfinite(result)) {
+                screen = "Error";
+                latestOperation = "";
+                return;
+            }
+
+            latestValue = result;
+            screen = formatResult(result);
+        } else {
+            latestValue = currentValue;
+        }
+
         latestOperation = operation;
+        lastOperand = currentValue;
+        repeatMode = false;
+        screen = "0";
     }
+
+
+
+
 
     /**
      * Empfängt den Wert einer gedrückten unären Operationstaste, also eine der drei Operationen
      * Quadratwurzel, Prozent, Inversion, welche nur einen Operanden benötigen.
      * Beim Drücken der Taste wird direkt die Operation auf den aktuellen Zahlenwert angewendet und
      * der Bildschirminhalt mit dem Ergebnis aktualisiert.
+     *
      * @param operation "√" für Quadratwurzel, "%" für Prozent, "1/x" für Inversion
      */
     public void pressUnaryOperationKey(String operation) {
         latestValue = Double.parseDouble(screen);
         latestOperation = operation;
-        var result = switch(operation) {
+        var result = switch (operation) {
             case "√" -> Math.sqrt(Double.parseDouble(screen));
             case "%" -> Double.parseDouble(screen) / 100;
             case "1/x" -> 1 / Double.parseDouble(screen);
             default -> throw new IllegalArgumentException();
         };
         screen = Double.toString(result);
-        if(screen.equals("NaN")) screen = "Error";
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        if (screen.equals("NaN")) screen = "Error";
+        if (screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
 
     }
 
@@ -95,7 +133,7 @@ public class Calculator {
      * Beim zweimaligem Drücken, oder wenn bereits ein Trennzeichen angezeigt wird, passiert nichts.
      */
     public void pressDotKey() {
-        if(!screen.contains(".")) screen = screen + ".";
+        if (!screen.contains(".")) screen = screen + ".";
     }
 
     /**
@@ -119,7 +157,7 @@ public class Calculator {
      * und das Ergebnis direkt angezeigt.
      */
     public void pressEqualsKey() {
-        var result = switch(latestOperation) {
+        var result = switch (latestOperation) {
             case "+" -> latestValue + Double.parseDouble(screen);
             case "-" -> latestValue - Double.parseDouble(screen);
             case "x" -> latestValue * Double.parseDouble(screen);
@@ -127,26 +165,37 @@ public class Calculator {
             default -> throw new IllegalArgumentException();
         };
 
-        screen = Double.toString(result).replace("E", "e");
+        if (Double.isNaN(result) || Double.isInfinite(result)) {
+            screen = "Error";
+        } else {
+            // Ergebnis auf 9 Nachkommastellen runden
+            double faktor = 1_000_000_000d;
+            double gerundet = Math.round(result * faktor) / faktor;
 
-        if(screen.equals("Infinity")) screen = "Error";
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains("e")) {
-            String[] parts = screen.split("e");
-            int rounded= (int) Math.round(Double.parseDouble(parts[0]));
-            screen = rounded + "e+" + parts[1];
+            // Ergebnis als Text darstellen – ".0" entfernen, wenn nötig
+            if (gerundet == (long) gerundet) {
+                screen = String.format("%d", (long) gerundet);
+            } else {
+                screen = Double.toString(gerundet);
+            }
         }
-        if(screen.contains(".") && screen.length() > 11) screen = Double.toString(Math.round(result / 10) * 10);
     }
 
-    public static void main(String[] args) {
-        Calculator calc = new Calculator();
-        calc.pressDigitKey(8);
-        calc.pressBinaryOperationKey("/");
-        calc.pressDigitKey(2);
-        calc.pressEqualsKey();
+    /**
+     * Formatiert das Ergebnis:
+     * - Rundet auf 9 Nachkommastellen
+     * - Entfernt unnötige Nullen
+     * - Begrenzt Anzeige auf max. 10 Zeichen
+     */
+    private String formatResult(double result) {
+        BigDecimal bd = new BigDecimal(result).setScale(9, RoundingMode.HALF_UP).stripTrailingZeros();
+        String text = bd.toPlainString();
 
-        System.out.println(calc.readScreen());
+        // Maximal 10 Zeichen (inkl. Punkt), wie beim Originalrechner
+        if (text.length() > 10) {
+            text = text.substring(0, 10);
+        }
 
+        return text;
     }
 }
